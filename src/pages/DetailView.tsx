@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getPokemon, officialArtworkUrl } from "../api/pokeapi";
 import type { PokemonDetail } from "../types/pokemon";
 
@@ -7,7 +7,7 @@ export default function DetailView() {
   const { idOrName = "" } = useParams();
   const [data, setData] = useState<PokemonDetail | null>(null);
   const navigate = useNavigate();
-  const { state } = useLocation() as { state?: { list?: number[] } };
+  const { state } = useLocation() as { state?: { list?: number[]; from?: string } };
 
   useEffect(() => {
     getPokemon(idOrName).then(setData);
@@ -16,23 +16,22 @@ export default function DetailView() {
   const order = state?.list ?? null;
   const idx = useMemo(() => {
     if (!order || !data) return -1;
-    return order.indexOf(data.id);
-  }, [order, data]);
-
+    return order.indexOf(data.id);}, [order, data]);
   const goPrev = () => {
-    if (order && idx > 0) navigate(`/pokemon/${order[idx - 1]}`, { state: { list: order } });
+    if (order && idx > 0) navigate(`/pokemon/${order[idx - 1]}`, { state: { list: order, from: state?.from } });
   };
   const goNext = () => {
-    if (order && idx >= 0 && idx < order.length - 1) navigate(`/pokemon/${order[idx + 1]}`, { state: { list: order } });
+    if (order && idx >= 0 && idx < order.length - 1)
+      navigate(`/pokemon/${order[idx + 1]}`, { state: { list: order, from: state?.from } });
   };
 
   if (!data) return <p>Loading…</p>;
 
   return (
     <article className="detail">
-      <button onClick={() => navigate(-1)} className="back-link">
+      <Link to={state?.from ?? "/"} className="back-link">
         ← Back
-      </button>
+      </Link>
       <div className="detail-card">
         <div className="detail-header">
           <img alt={data.name} src={officialArtworkUrl(data.id)} className="detail-image" />

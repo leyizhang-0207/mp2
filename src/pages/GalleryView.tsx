@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { getPokemonList, getTypeList, getTypeDetail, idFromUrl, officialArtworkUrl } from "../api/pokeapi";
 import type { NamedAPIResource } from "../types/pokemon";
 
@@ -8,12 +8,12 @@ export default function GalleryView() {
   const [types, setTypes] = useState<string[]>([]);
   const [allowedIds, setAllowedIds] = useState<Set<number> | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+
   const activeTypes = useMemo(() => searchParams.get("types")?.split(",") || [], [searchParams]);
 
-  useEffect(() => {
-    getPokemonList(200, 0).then((r) => setAll(r.results));
-    getTypeList().then((r) => setTypes(r.results.map((t) => t.name)));
-  }, []);
+  useEffect(() => {getPokemonList(200, 0).then((r) => setAll(r.results));
+    getTypeList().then((r) => setTypes(r.results.map((t) => t.name)));}, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,7 +28,9 @@ export default function GalleryView() {
       if (!cancelled) setAllowedIds(idSet);
     }
     load();
-    return () => {cancelled = true;};
+    return () => {
+      cancelled = true;
+    };
   }, [activeTypes]);
 
   const shown = useMemo(() => {
@@ -42,7 +44,7 @@ export default function GalleryView() {
     if (newActiveTypes.length > 0) {
       newParams.set("types", newActiveTypes.join(","));
     } else {
-      newParams.delete("types"); 
+      newParams.delete("types");
     }
     setSearchParams(newParams);
   };
@@ -50,6 +52,7 @@ export default function GalleryView() {
   return (
     <section className="gallery">
       <h1>Pokemon Gallery</h1>
+
       <fieldset className="filters">
         <legend>Filter by Type</legend>
         <div className="chips">
@@ -64,8 +67,8 @@ export default function GalleryView() {
 
       <ul className="grid">
         {shown.map((p) => (
-          <li key={p.id} className="card">
-            <Link to={`/pokemon/${p.id}`} state={{ list: shown.map((x) => x.id) }}>
+          <li key={p.id} className="card"> 
+            <Link to={`/pokemon/${p.id}`} state={{ list: shown.map((x) => x.id), from: location.pathname + location.search }}>
               <img alt={p.name} loading="lazy" src={officialArtworkUrl(p.id)} />
               <div className="meta">
                 <span>#{p.id}</span>
