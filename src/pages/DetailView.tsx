@@ -30,8 +30,9 @@ export default function DetailView() {
 
   return (
     <article className="detail">
-      <a href="#" onClick={(e) => { e.preventDefault(); navigate(-1); }} className="back-link">
-        ← Back </a>
+      <button onClick={() => navigate(-1)} className="back-link">
+        ← Back
+      </button>
       <div className="detail-card">
         <div className="detail-header">
           <img alt={data.name} src={officialArtworkUrl(data.id)} className="detail-image" />
